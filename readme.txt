@@ -5,3 +5,6 @@ git clone bang@mac.local:/Users/bang/git/tu_anh.git
 mkvirtualenv tu_anh
 cdvirtualenv
 pip install -r ./requirements.txt
+
+Start server:
+python manage.py runserver
