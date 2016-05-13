@@ -36,7 +36,7 @@ class UserViewSet(viewsets.ModelViewSet):
 router = routers.DefaultRouter()
 router.register(r'users', UserViewSet)
 urlpatterns = [
-    url(r'^', include(router.urls)),
-    url(r'^hists/', include('hists.urls')),
-    url(r'^admin/', admin.site.urls),
+    # url(r'^', include(router.urls)),
+    url(r'^', include('hists.urls')),
+    # url(r'^admin/', admin.site.urls),
 ]
