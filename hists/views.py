@@ -13,5 +13,5 @@ class HistView(TemplateView):
     @never_cache
     def post(self, request, *args, **kwargs):
         model = HistModel()
-        result = model.sdd(request.FILES['image'])
+        result = model.cosine_sift(request.FILES['image'])
         return JsonResponse({'result': result})
