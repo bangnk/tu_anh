@@ -35,7 +35,7 @@
               <img src="/static/images/plus.png"  width="50px" />
             </div>
             <div class="row highlight" id="selectedImageOuter" style="visibility: hidden;">
-              <img id="selectedImage" src="#" style="width: 170px;" />
+              <img id="selectedImage" src="#" style="width: 130px;" />
             </div>
           </div>
           <div class="col-md-10" id="response">
@@ -58,7 +58,7 @@
         res = $('#response')
         res.html('');
         for (var i = 0; i < responseText.result.length; i++) {
-          res.append('<img src="/static/images/' + responseText.result[i] + '" style="width: 170px;margin:5px;"/>')
+          res.append('<img src="/static/images/' + responseText.result[i] + '" style="width: 130px;margin:10px;"/>')
         }
       }
       function readURL(input) {

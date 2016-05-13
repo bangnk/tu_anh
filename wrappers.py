@@ -39,7 +39,7 @@ def elapsed():
             start_time = dt.datetime.now()
             result = func(*args, **kwargs)
             elapsed_time = dt.datetime.now() - start_time
-            print '%s(): %is' % (func.__name__, elapsed_time.seconds)
+            print '%s(): %is' % (func.__name__, elapsed_time.microseconds)
             return result
         return wrapper
     return decorator

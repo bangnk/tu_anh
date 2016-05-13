@@ -12,7 +12,9 @@ from collections import Counter
 np.set_printoptions(threshold=np.nan)
 from sklearn import preprocessing
 
-n_clusters = 100
+n_clusters = 500
+
+
 def tiny():
     glo = glob.glob('shopping/images/*.jpg')
     size = 32, 32
@@ -97,24 +99,12 @@ def sift_hist():
             histograms[i, clusters[t]] += 1
             t += 1
         names.append(image.filename.split('/')[-1])
-        if 'bags_hobo_289' in image.filename:
-            print histograms[i]
-            h = [  0,   0,   3,   0,   2,   2,   0,   0,   0,   2,   1,   1,   1,   0,   3,
-                   3,   0,  10,   1,   0,   5,   0,   3,   0,   1,   1,   1,   1,   1,   0,
-                   6,   1,   1,   1,   1,   3,   0,   3,   7,   2,   8,   0,   0,   4,   1,
-                   0,   0,   2,   0,   1,   1,   2,   0,   0,   0,   3,   0,   1,   5,   1,
-                   1,   1,   1,   0,   2,   1,   0,   0,   0,   0,   4,   2,   1,   0,   1,
-                   0,   2,   0,   3,   3,   2,   0,   0,   0,   0,   0,   1,   0,   1,   0,
-                   0,   0,   2,   0,   2,   0,   0,   0,   0,   3]
-            print np.sum(h == histograms[i])
     # df = np.sum(preprocessing.binarize(histograms, copy=False), axis=0)
 
-    # print tfidf.shape
-    # histograms = preprocessing.normalize(histograms)
-    # print histograms
+    histograms = preprocessing.normalize(histograms)
     with open('data/sift_names.npy', 'w') as f:
         cPickle.dump(names, f)
-    with open('data/sift_tfidf.npy', 'w') as f:
+    with open('data/sift_hist.npy', 'w') as f:
         cPickle.dump(histograms, f)
 
 
@@ -127,6 +117,6 @@ if __name__ == "__main__":
         sift_features()
     if not os.path.exists('data/sift_leaders.npy'):
         sift_kmean()
-    # if not os.path.exists('data/sift_tfidf.npy'):
+    # if not os.path.exists('data/sift_hist.npy'):
     sift_hist()
 
