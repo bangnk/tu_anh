@@ -13,13 +13,16 @@ from tiny import n_clusters
 class HistModel:
     with open(os.path.dirname(os.path.realpath(__file__)) + '/../data/kmean_model.pkl', 'r') as f:
         model = cPickle.load(f)
-    with open(os.path.dirname(os.path.realpath(__file__)) + '/../data/sift_hist.npy', 'r') as f:
-        histograms = cPickle.load(f)
+    with open(os.path.dirname(os.path.realpath(__file__)) + '/../data/lshforest.pkl', 'r') as f:
+        lsh = cPickle.load(f)
     with open(os.path.dirname(os.path.realpath(__file__)) + '/../data/sift_names.npy', 'r') as f:
         names = cPickle.load(f)
 
-    def sdd(self, file):
-        img = Image.open(file).convert('L')
+    def sdd(self, uploaded_file):
+        """
+        Find similar image base on SDD of histogram
+        """
+        img = Image.open(uploaded_file).convert('L')
         img.thumbnail((32, 32))
         img_hist = img.histogram()
         hists = np.load(os.path.dirname(os.path.realpath(__file__)) + '/hists.npy')
@@ -32,6 +35,9 @@ class HistModel:
 
     @elapsed()
     def cosine_sift(self, uploaded_file):
+        """
+        Find similar image base on sift features
+        """
         sift = cv2.xfeatures2d.SIFT_create()
         nparr = np.fromstring(uploaded_file.read(), np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -39,8 +45,7 @@ class HistModel:
 
         v = HistModel.model.predict(des)
         histogram = np.histogram(v, bins=n_clusters, range=(0, n_clusters))[0]
-
-        s = np.dot(HistModel.histograms, histogram)
-        indexes = np.array(s).argsort()[::-1][:15]
-        nam = [HistModel.names[i] for i in indexes]
-        return nam
+        histogram = np.reshape(histogram, (1, len(histogram)))
+        indices = HistModel.lsh.kneighbors(histogram, n_neighbors=15)[1][0]
+        names = [HistModel.names[i] for i in indices]
+        return names

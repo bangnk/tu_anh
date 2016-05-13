@@ -7,15 +7,17 @@ import json
 import pandas as pd
 import cPickle
 from sklearn.cluster import MiniBatchKMeans
-from wrappers import *
-from collections import Counter
 np.set_printoptions(threshold=np.nan)
 from sklearn import preprocessing
-
-n_clusters = 500
+from sklearn.neighbors import LSHForest
+n_clusters = 5000
+from wrappers import *
 
 
 def tiny():
+    """
+    Shrink images and convert to grayscale
+    """
     glo = glob.glob('shopping/images/*.jpg')
     size = 32, 32
     for i, filename in enumerate(glo):
@@ -29,6 +31,9 @@ def tiny():
 
 
 def hist():
+    """
+    Calculate image histograms on grayscale
+    """
     glo = glob.glob('shopping/grayscale32x32/*.png')
     hists = np.zeros((len(os.listdir('shopping/grayscale32x32')), 256))
     names = {}
@@ -45,6 +50,9 @@ def hist():
 
 
 def sift_features():
+    """
+    Extract sift features
+    """
     glo = glob.glob('shopping/images/*.jpg')
     sift = cv2.xfeatures2d.SIFT_create()
     dess = []
@@ -74,9 +82,11 @@ def sift_features():
 
 @elapsed()
 def sift_kmean():
+    """
+    Use kmean to get visual words
+    """
     with open('data/sift_features.npy', 'r') as f:
         xtrain = cPickle.load(f)
-    # preprocessing.normalize(xtrain, axis=0, copy=False)
     model = MiniBatchKMeans(n_clusters=n_clusters, verbose=1, batch_size=1000, max_no_improvement=100, init_size=10000)
     model.fit(xtrain)
     z = model.predict(xtrain)
@@ -87,6 +97,9 @@ def sift_kmean():
 
 
 def sift_hist():
+    """
+    Calculate histogram of visual words and make index for fast search (lshmodel)
+    """
     with open('data/sift_leaders.npy', 'r') as f:
         clusters = cPickle.load(f)
     images = pd.read_csv('data/sift_info.csv')
@@ -99,13 +112,14 @@ def sift_hist():
             histograms[i, clusters[t]] += 1
             t += 1
         names.append(image.filename.split('/')[-1])
-    # df = np.sum(preprocessing.binarize(histograms, copy=False), axis=0)
 
     histograms = preprocessing.normalize(histograms)
+    model = LSHForest()
+    model.fit(histograms)
+    with open('data/lshforest.pkl', 'w') as f:
+        cPickle.dump(model, f)
     with open('data/sift_names.npy', 'w') as f:
         cPickle.dump(names, f)
-    with open('data/sift_hist.npy', 'w') as f:
-        cPickle.dump(histograms, f)
 
 
 if __name__ == "__main__":
@@ -117,6 +131,6 @@ if __name__ == "__main__":
         sift_features()
     if not os.path.exists('data/sift_leaders.npy'):
         sift_kmean()
-    # if not os.path.exists('data/sift_hist.npy'):
-    sift_hist()
+    if not os.path.exists('data/lshforest.pkl'):
+        sift_hist()
 
