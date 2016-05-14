@@ -13,9 +13,9 @@ from tiny import n_clusters
 class SearchModel:
     with open(os.path.dirname(os.path.realpath(__file__)) + '/../data/kmean_model.pkl', 'r') as f:
         model = cPickle.load(f)
-    with open(os.path.dirname(os.path.realpath(__file__)) + '/../data/lshforest.pkl', 'r') as f:
+    with open(os.path.dirname(os.path.realpath(__file__)) + '/../data/lshforest_sift.pkl', 'r') as f:
         lsh = cPickle.load(f)
-    with open(os.path.dirname(os.path.realpath(__file__)) + '/../data/sift_names.npy', 'r') as f:
+    with open(os.path.dirname(os.path.realpath(__file__)) + '/../data/sift_names.pkl', 'r') as f:
         names = cPickle.load(f)
 
     def sdd(self, uploaded_file):
@@ -25,7 +25,7 @@ class SearchModel:
         img = Image.open(uploaded_file).convert('L')
         img.thumbnail((32, 32))
         img_hist = img.histogram()
-        hists = np.load(os.path.dirname(os.path.realpath(__file__)) + '/hists.npy')
+        hists = np.load(os.path.dirname(os.path.realpath(__file__)) + '/hists.pkl')
         s = np.sum((hists - img_hist) ** 2, axis=1)
         s = s.argsort()[:15]
         with open('hists/names.json', 'r') as f:
