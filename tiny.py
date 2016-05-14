@@ -120,10 +120,8 @@ def sift_hist():
         names.append(image.filename.split('/')[-1])
 
     histograms = preprocessing.normalize(histograms)
-    model = LSHForest()
-    model.fit(histograms)
-    with open('data/lshforest_sift.pkl', 'w') as f:
-        cPickle.dump(model, f)
+    with open('data/sift_hist.pkl', 'w') as f:
+        cPickle.dump(histograms, f)
     with open('data/sift_names.pkl', 'w') as f:
         cPickle.dump(names, f)
 
@@ -134,19 +132,27 @@ def text_hist():
     """
     with open('data/sift_names.pkl', 'r') as f:
         names = cPickle.load(f)
+    with open('data/sift_hist.pkl', 'r') as f:
+        sift_hists = cPickle.load(f)
     filenames = []
     for name in names:
         name = name.replace('img', 'descr')
         name = name.replace('.jpg', '.txt')
         filenames.append('shopping/images/' + name)
-    vectorizer = CountVectorizer(input='filename', token_pattern="(?u)"+'\w+', ngram_range=(1, 1), min_df=3)
+    vectorizer = CountVectorizer(input='filename', token_pattern="(?u)"+'\w+', ngram_range=(1, 1), min_df=2)
     xall_transformed = vectorizer.fit_transform(filenames).tocsr()
     preprocessing.normalize(xall_transformed, copy=False)
+
+    lamb = .6
+    hists = scipy.sparse.hstack([xall_transformed * lamb, sift_hists * (1-lamb)]).toarray()
+    preprocessing.normalize(hists, copy=False)
     model = LSHForest()
-    model.fit(xall_transformed)
+    model.fit(hists)
     with open('data/text_hist.pkl', 'w') as f:
         cPickle.dump(xall_transformed, f)
-    with open('data/lshforest_text.pkl', 'w') as f:
+    with open('data/vectorizer.pkl', 'w') as f:
+        cPickle.dump(vectorizer, f)
+    with open('data/lshforest_combine.pkl', 'w') as f:
         cPickle.dump(model, f)
 
 
@@ -204,8 +210,7 @@ if __name__ == "__main__":
         sift_features()
     if not os.path.exists('data/sift_leaders.pkl'):
         sift_kmean()
-    if not os.path.exists('data/lshforest_sift.pkl'):
+    if not os.path.exists('data/sift_hist.pkl'):
         sift_hist()
-    if not os.path.exists('data/lshforest_text.pkl'):
+    if not os.path.exists('data/text_hist.pkl'):
         text_hist()
-    tune_cv()
