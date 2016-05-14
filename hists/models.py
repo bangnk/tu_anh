@@ -10,7 +10,7 @@ from wrappers import *
 from tiny import n_clusters
 
 
-class HistModel:
+class SearchModel:
     with open(os.path.dirname(os.path.realpath(__file__)) + '/../data/kmean_model.pkl', 'r') as f:
         model = cPickle.load(f)
     with open(os.path.dirname(os.path.realpath(__file__)) + '/../data/lshforest.pkl', 'r') as f:
@@ -43,9 +43,9 @@ class HistModel:
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         kp, des = sift.detectAndCompute(img, None)
 
-        v = HistModel.model.predict(des)
+        v = SearchModel.model.predict(des)
         histogram = np.histogram(v, bins=n_clusters, range=(0, n_clusters))[0]
         histogram = np.reshape(histogram, (1, len(histogram)))
-        indices = HistModel.lsh.kneighbors(histogram, n_neighbors=15)[1][0]
-        names = [HistModel.names[i] for i in indices]
+        indices = SearchModel.lsh.kneighbors(histogram, n_neighbors=15)[1][0]
+        names = [SearchModel.names[i] for i in indices]
         return names
