@@ -93,7 +93,7 @@ def sift_kmean():
     """
     with open('data/sift_features.pkl', 'r') as f:
         xtrain = cPickle.load(f)
-    model = MiniBatchKMeans(n_clusters=n_clusters, verbose=1, batch_size=1000, max_no_improvement=100, init_size=10000)
+    model = MiniBatchKMeans(n_clusters=n_clusters, verbose=0, batch_size=1000, max_no_improvement=100, init_size=10000)
     model.fit(xtrain)
     z = model.predict(xtrain)
     with open('data/sift_leaders.pkl', 'w') as f:
@@ -195,10 +195,64 @@ def tune_cv():
             for i in range(len(valid_index)):
                 cos = np.dot(xtrain, xvalid[i])
                 indices = cos.argsort()[::-1][:10]
-                s.append(np.sum(ytrain[indices] == yvalid[i]) )
+                s.append(np.sum(ytrain[indices] == yvalid[i]))
         counter[lamb] = np.mean(np.array(s))
         print counter[lamb]
     print counter
+
+
+def test():
+    with open('data/sift_names.pkl', 'r') as f:
+        names = cPickle.load(f)
+    glo = glob.glob('shopping/queryimages/*.jpg')
+    y = []
+    for n in names:
+        a = n.split('.')[0].split('_')
+        y.append(a[1] + a[2])
+    le = preprocessing.LabelEncoder()
+    y = le.fit_transform(y)
+
+    ytest = []
+    filenames = []
+    text_filenames = []
+    for i, filename in enumerate(glo):
+        filenames.append(filename)
+        a = filename.split('.')[0].split('_')
+        ytest.append(a[1] + a[2])
+        filename = filename.replace('/images/', '/queryimages/')
+        filename = filename.replace('img', 'descr')
+        filename = filename.replace('.jpg', '.txt')
+        text_filenames.append(filename)
+    ytest = le.fit_transform(ytest)
+
+    with open('data/vectorizer.pkl', 'r') as f:
+        vectorizer = cPickle.load(f)
+    text_histogram = vectorizer.transform(text_filenames).tocsr()
+    preprocessing.normalize(text_histogram, copy=False)
+
+    with open('data/kmean_model.pkl', 'r') as f:
+        model = cPickle.load(f)
+    sift = cv2.xfeatures2d.SIFT_create()
+    sift_histogram = np.zeros((len(filenames), n_clusters))
+    for i in range(len(filenames)):
+        filename = filenames[i]
+        img = cv2.imread(filename)
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        kp, des = sift.detectAndCompute(gray, None)
+        v = model.predict(des)
+        sift_histogram[i] = np.histogram(v, bins=n_clusters, range=(0, n_clusters))[0]
+
+    lamb = .5
+    histogram = scipy.sparse.hstack([text_histogram * lamb, sift_histogram * (1-lamb)]).toarray()
+    preprocessing.normalize(histogram, copy=False)
+
+    with open('data/lshforest_combine.pkl', 'r') as f:
+        lsh = cPickle.load(f)
+    indices = lsh.kneighbors(histogram, n_neighbors=10)[1]
+    s = []
+    for i in range(len(indices)):
+        s.append(np.sum(y[indices[i]] == ytest[i]))
+    print np.mean(np.array(s))  # 6.5/10
 
 
 if __name__ == "__main__":
@@ -214,3 +268,4 @@ if __name__ == "__main__":
         sift_hist()
     if not os.path.exists('data/text_hist.pkl'):
         text_hist()
+    test()
