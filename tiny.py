@@ -250,9 +250,18 @@ def test():
         lsh = cPickle.load(f)
     indices = lsh.kneighbors(histogram, n_neighbors=10)[1]
     s = []
+
+    t = Counter()
+    c = Counter()
     for i in range(len(indices)):
         s.append(np.sum(y[indices[i]] == ytest[i]))
+        c[ytest[i]] += np.sum(y[indices[i]] == ytest[i])
+        t[ytest[i]] += 1
+    for k, v in c.most_common():
+        c[k] /= float(t[k])
     print np.mean(np.array(s))  # 6.5/10
+    print c.most_common()
+    print le.inverse_transform(t.keys())
 
 
 if __name__ == "__main__":
