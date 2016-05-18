@@ -202,6 +202,9 @@ def tune_cv():
 
 
 def test():
+    """
+    Tinh precision tren tap du lieu test
+    """
     with open('data/sift_names.pkl', 'r') as f:
         names = cPickle.load(f)
     glo = glob.glob('shopping/queryimages/*.jpg')
