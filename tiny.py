@@ -10,7 +10,7 @@ from sklearn.cluster import MiniBatchKMeans
 np.set_printoptions(threshold=np.nan)
 from sklearn import preprocessing
 from sklearn.neighbors import LSHForest
-n_clusters = 5000
+n_clusters = 1024
 from wrappers import *
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.cross_validation import KFold
@@ -143,7 +143,7 @@ def text_hist():
     xall_transformed = vectorizer.fit_transform(filenames).tocsr()
     preprocessing.normalize(xall_transformed, copy=False)
 
-    lamb = .6
+    lamb = .5
     hists = scipy.sparse.hstack([xall_transformed * lamb, sift_hists * (1-lamb)]).toarray()
     preprocessing.normalize(hists, copy=False)
     model = LSHForest()
@@ -277,4 +277,4 @@ if __name__ == "__main__":
         sift_hist()
     if not os.path.exists('data/text_hist.pkl'):
         text_hist()
-    test()
+    # test()

@@ -44,12 +44,11 @@ class SearchModel:
         """
         name = uploaded_file.name
         name = name.replace('img', 'descr')
-        name = name.replace('.jpg', '.txt')
+        name1 = name.replace('.jpg', '.txt')
 
+        name = os.path.dirname(os.path.realpath(__file__)) + '/../shopping/queryimages/' + name1
         if not os.path.exists(name):
-            name = os.path.dirname(os.path.realpath(__file__)) + '/../shopping/queryimages/' + name
-        else:
-            name = os.path.dirname(os.path.realpath(__file__)) + '/../shopping/images/' + name
+            name = os.path.dirname(os.path.realpath(__file__)) + '/../shopping/images/' + name1
         filenames = [name]
         text_hist = SearchModel.vectorizer.transform(filenames).tocsr()
         preprocessing.normalize(text_hist, copy=False)
