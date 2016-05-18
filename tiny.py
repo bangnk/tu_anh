@@ -259,7 +259,7 @@ def test():
         t[ytest[i]] += 1
     for k, v in c.most_common():
         c[k] /= float(t[k])
-    print np.mean(np.array(s))  # 6.5/10
+    print np.mean(np.array(s))  # .5 -> 6.5/10, 1 -> 7.125
     print c.most_common()
     print le.inverse_transform(t.keys())
 
